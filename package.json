@@ -1,0 +1,59 @@
+{
+  "name": "priceriskmodule",
+  "version": "0.1.0",
+  "description": "Risk Module for the Ensuro Protocol that's triggered based on the change in the price of an asset.",
+  "scripts": {
+    "prettier": "prettier --write 'contracts/**/*.sol'",
+    "solhint": "solhint 'contracts/**/*.sol'"
+  },
+  "devDependencies": {
+    "@ethersproject/providers": "^5.7.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.3",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.1.1",
+    "@nomiclabs/hardhat-etherscan": "^3.1.0",
+    "@openzeppelin/hardhat-upgrades": "^1.20.0",
+    "@typechain/ethers-v5": "^10.1.0",
+    "@typechain/hardhat": "^6.1.2",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^9.1.1",
+    "chai": "^4.3.6",
+    "ethers": "5.6.1",
+    "hardhat": "^2.10.2",
+    "hardhat-contract-sizer": "^2.6.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "prettier": "^2.7.1",
+    "solhint": "^3.3.7",
+    "prettier-plugin-solidity": "^1.0.0-beta.24",
+    "solhint-plugin-prettier": "0.0.5",
+    "solidity-coverage": "^0.7.21",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.1.0",
+    "typescript": "^4.8.2"
+  },
+  "dependencies": {
+    "@ensuro/core": "^2.0.0-beta1",
+    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts-upgradeable": "^4.7.3",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "hardhat-dependency-compiler": "^1.1.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ensuro/price-risk-module.git"
+  },
+  "keywords": [
+    "ensuro",
+    "risk",
+    "module",
+    "price",
+    "oracles"
+  ],
+  "author": "guillermo@ensuro.co",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ensuro/price-risk-module/issues"
+  },
+  "homepage": "https://github.com/ensuro/price-risk-module#readme"
+}
