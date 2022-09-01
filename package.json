@@ -1,7 +1,7 @@
 {
-  "name": "priceriskmodule",
-  "version": "0.1.0",
-  "description": "Risk Module for the Ensuro Protocol that's triggered based on the change in the price of an asset.",
+  "name": "flightdelayriskmodule",
+  "version": "0.0.1",
+  "description": "Risk Module for the Ensuro Protocol that resolves policy based in actual arrival date of flight",
   "scripts": {
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "solhint": "solhint 'contracts/**/*.sol'"
@@ -24,8 +24,8 @@
     "hardhat-contract-sizer": "^2.6.1",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^2.7.1",
-    "solhint": "^3.3.7",
     "prettier-plugin-solidity": "^1.0.0-beta.24",
+    "solhint": "^3.3.7",
     "solhint-plugin-prettier": "0.0.5",
     "solidity-coverage": "^0.7.21",
     "ts-node": "^10.9.1",
@@ -33,27 +33,26 @@
     "typescript": "^4.8.2"
   },
   "dependencies": {
-    "@ensuro/core": "^2.0.0-beta1",
+    "@chainlink/contracts": "^0.2.2",
+    "@ensuro/core": "^2.0.0-beta4",
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/contracts-upgradeable": "^4.7.3",
-    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "hardhat-dependency-compiler": "^1.1.3"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ensuro/price-risk-module.git"
+    "url": "git+https://github.com/ensuro/flight-delay-risk-module.git"
   },
   "keywords": [
     "ensuro",
     "risk",
     "module",
-    "price",
-    "oracles"
+    "flight"
   ],
   "author": "guillermo@ensuro.co",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ensuro/price-risk-module/issues"
+    "url": "https://github.com/ensuro/flight-delay-risk-module/issues"
   },
-  "homepage": "https://github.com/ensuro/price-risk-module#readme"
+  "homepage": "https://github.com/ensuro/flight-delay-risk-module#readme"
 }
