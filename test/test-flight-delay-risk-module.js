@@ -15,7 +15,7 @@ const { ethers } = require("hardhat");
 const { getComponentRole, accessControlMessage, makePolicyId } = require("./local_utils");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("Test PriceRiskModule contract", function () {
+describe("FlightDelayRiskModule contract", function () {
   const ORACLE_FEE = _W("0.1");
 
   let currency;
@@ -282,6 +282,31 @@ describe("Test PriceRiskModule contract", function () {
 
     const policyResolvedEvt = getTransactionEvent(pool.interface, await fulfillTx.wait(), "PolicyResolved");
     expect(policyResolvedEvt.args.payout).to.equal(_A(0));
+  });
+
+  it("Rejects policies with expected arrival in the past", async () => {
+    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+
+    const policy = await makePolicy({ expectedArrival: (await helpers.time.latest()) - 20 });
+
+    await expect(rm.connect(backend).newPolicy(...policy.toArgs())).to.be.revertedWith(
+      "expectedArrival can't be in the past"
+    );
+  });
+
+  it("Rejects policies with expected arrival before departure", async () => {
+    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+
+    const policy = await makePolicy({});
+    policy.expectedArrival = policy.departure - 10;
+
+    await expect(rm.connect(backend).newPolicy(...policy.toArgs())).to.be.revertedWith("expectedArrival <= departure!");
+  });
+
+  it("Reverts when resolving unknown policy", async () => {
+    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+
+    await expect(rm.connect(backend).resolvePolicy(makePolicyId(rm, 123))).to.be.revertedWith("Policy not found!");
   });
 
   async function deployRiskModuleWithOracleMock() {
