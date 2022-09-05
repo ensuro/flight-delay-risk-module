@@ -7,12 +7,13 @@ const {
   _W,
   addRiskModule,
   amountFunction,
-  grantComponentRole,
   addEToken,
   getTransactionEvent,
+  getComponentRole,
+  accessControlMessage,
+  makePolicyId,
 } = require("@ensuro/core/js/test-utils");
 const { ethers } = require("hardhat");
-const { getComponentRole, accessControlMessage, makePolicyId } = require("./local_utils");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("FlightDelayRiskModule contract", function () {
@@ -21,7 +22,7 @@ describe("FlightDelayRiskModule contract", function () {
   let currency;
   let linkToken;
   let pool;
-  let poolConfig;
+  let accessManager;
   let _A;
   let owner, lp, cust, oracle, backend;
   let FlighDelayRiskModule;
@@ -50,7 +51,7 @@ describe("FlightDelayRiskModule contract", function () {
 
     premiumsAccount = await deployPremiumsAccount(hre, pool, { srEtkAddr: etk.address });
 
-    poolConfig = await ethers.getContractAt("PolicyPoolConfig", await pool.config());
+    accessManager = await ethers.getContractAt("AccessManager", await pool.access());
 
     FlighDelayRiskModule = await ethers.getContractFactory("FlightDelayRiskModule");
 
@@ -83,7 +84,7 @@ describe("FlightDelayRiskModule contract", function () {
       accessControlMessage(owner.address, rm.address, "ORACLE_ADMIN_ROLE")
     );
 
-    await poolConfig.grantComponentRole(rm.address, await rm.ORACLE_ADMIN_ROLE(), owner.address);
+    await accessManager.grantComponentRole(rm.address, await rm.ORACLE_ADMIN_ROLE(), owner.address);
 
     await rm.connect(owner).setOracleParams(newOracleParams);
 
@@ -325,7 +326,7 @@ describe("FlightDelayRiskModule contract", function () {
     await oracleMock.deployed();
 
     //
-    await poolConfig.grantComponentRole(rm.address, await rm.ORACLE_ADMIN_ROLE(), owner.address);
+    await accessManager.grantComponentRole(rm.address, await rm.ORACLE_ADMIN_ROLE(), owner.address);
 
     // Then change the contract to use the mock
     const oracleParams = {};
@@ -335,7 +336,7 @@ describe("FlightDelayRiskModule contract", function () {
     await rm.connect(owner).setOracleParams(oracleParams);
 
     // Also grant a default PRICER_ROLE
-    await poolConfig.grantComponentRole(rm.address, await rm.PRICER_ROLE(), backend.address);
+    await accessManager.grantComponentRole(rm.address, await rm.PRICER_ROLE(), backend.address);
 
     //
     await currency.connect(cust).approve(pool.address, _W(100));
