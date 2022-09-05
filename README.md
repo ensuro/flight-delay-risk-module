@@ -1,6 +1,6 @@
-# Ensuro Risk Module
+# Flight Delay Risk Module
 
-This is a Risk Module for the Ensuro Protocol.
+This is a Flight Delay Risk Module for the Ensuro Protocol.
 
 Try running some of the following tasks:
 
