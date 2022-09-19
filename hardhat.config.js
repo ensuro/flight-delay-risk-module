@@ -1,8 +1,8 @@
 require("@nomicfoundation/hardhat-toolbox");
-require('@openzeppelin/hardhat-upgrades');
-require('hardhat-dependency-compiler');
+require("@openzeppelin/hardhat-upgrades");
+require("hardhat-dependency-compiler");
 require("hardhat-contract-sizer");
-require('solidity-coverage');
+require("solidity-coverage");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -11,9 +11,9 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
-      }
-    }
+        runs: 200,
+      },
+    },
   },
   contractSizer: {
     alphaSort: true,
@@ -22,12 +22,11 @@ module.exports = {
   },
   dependencyCompiler: {
     paths: [
-      '@ensuro/core/contracts/PolicyPool.sol',
-      '@ensuro/core/contracts/AccessManager.sol',
-      '@ensuro/core/contracts/PremiumsAccount.sol',
-      '@ensuro/core/contracts/PolicyNFT.sol',
-      '@ensuro/core/contracts/EToken.sol',
-      '@ensuro/core/contracts/mocks/TestCurrency.sol',
+      "@ensuro/core/contracts/PolicyPool.sol",
+      "@ensuro/core/contracts/AccessManager.sol",
+      "@ensuro/core/contracts/PremiumsAccount.sol",
+      "@ensuro/core/contracts/EToken.sol",
+      "@ensuro/core/contracts/mocks/TestCurrency.sol",
     ],
   },
 };

@@ -114,7 +114,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
    * @param payout Payout for customer in case policy is triggered
    * @param premium Premium the customer pays
    * @param lossProb Probability of policy being triggered
-   * @param customer Customer address (to take premium from and send payout)
+   * @param onBehalfOf Customer address (to take premium from and send payout)
    */
   function newPolicy(
     string memory flight,
@@ -124,7 +124,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
     uint256 payout,
     uint256 premium,
     uint256 lossProb,
-    address customer,
+    address onBehalfOf,
     uint96 internalId
   ) external onlyComponentRole(PRICER_ROLE) returns (uint256) {
     require(expectedArrival > block.timestamp, "expectedArrival can't be in the past");
@@ -138,7 +138,8 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
       premium,
       lossProb,
       expiration,
-      customer,
+      onBehalfOf,
+      onBehalfOf,
       internalId
     );
     PolicyData storage policy = _policies[ensuroPolicy.id];

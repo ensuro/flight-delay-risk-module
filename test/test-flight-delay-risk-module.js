@@ -340,6 +340,7 @@ describe("FlightDelayRiskModule contract", function () {
 
     //
     await currency.connect(cust).approve(pool.address, _W(100));
+    await currency.connect(cust).approve(backend.address, _W(100));
 
     // Setup the oracle mock to call the risk module
     oracleRm = await ethers.getContractAt("FlightDelayRiskModule", oracleMock.address);
