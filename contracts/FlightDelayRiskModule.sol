@@ -89,7 +89,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
   function __FlightDelayRiskModule_init_unchained(
     address linkToken_,
     OracleParams memory oracleParams_
-  ) internal initializer {
+  ) internal onlyInitializing {
     setChainlinkToken(linkToken_);
     _oracleParams = oracleParams_;
   }
