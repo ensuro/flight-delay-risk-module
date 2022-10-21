@@ -13,53 +13,26 @@ const {
   accessControlMessage,
   makePolicyId,
 } = require("@ensuro/core/js/test-utils");
-const { ethers } = require("hardhat");
+const hre = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
+
+hre.upgrades.silenceWarnings();
 
 describe("FlightDelayRiskModule contract", function () {
   const ORACLE_FEE = _W("0.1");
 
-  let currency;
-  let linkToken;
-  let pool;
-  let accessManager;
   let _A;
   let owner, lp, cust, oracle, backend;
   let FlighDelayRiskModule;
 
   beforeEach(async () => {
-    [owner, lp, cust, oracle, backend] = await ethers.getSigners();
-
+    [owner, lp, cust, oracle, backend] = await hre.ethers.getSigners();
     _A = amountFunction(6);
-
-    currency = await initCurrency(
-      { name: "Test USDC", symbol: "USDC", decimals: 6, initial_supply: _A(10000) },
-      [lp, cust],
-      [_A(5000), _A(500)]
-    );
-
-    linkToken = await deployLinkToken();
-
-    pool = await deployPool(hre, {
-      currency: currency.address,
-      grantRoles: ["LEVEL1_ROLE", "LEVEL2_ROLE"],
-      treasuryAddress: "0x87c47c9a5a2aa74ae714857d64911d9a091c25b1", // Random address
-    });
-    pool._A = _A;
-
-    etk = await addEToken(pool, {});
-
-    premiumsAccount = await deployPremiumsAccount(hre, pool, { srEtkAddr: etk.address });
-
-    accessManager = await ethers.getContractAt("AccessManager", await pool.access());
-
-    FlighDelayRiskModule = await ethers.getContractFactory("FlightDelayRiskModule");
-
-    await currency.connect(lp).approve(pool.address, _A(5000));
-    await pool.connect(lp).deposit(etk.address, _A(5000));
+    FlighDelayRiskModule = await hre.ethers.getContractFactory("FlightDelayRiskModule");
   });
 
   it("Allows only oracle admin to set oracle params", async () => {
+    const { pool, premiumsAccount, accessManager, linkToken } = await helpers.loadFixture(deployPoolFixture);
     const rm = await addRiskModule(pool, premiumsAccount, FlighDelayRiskModule, {
       extraArgs: [
         linkToken.address,
@@ -94,7 +67,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Allows only PRICER_ROLE to add new policies", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
     const policy = await makePolicy({});
     await expect(rm.newPolicy(...policy.toArgs())).to.be.revertedWith(
       accessControlMessage(owner.address, rm.address, "PRICER_ROLE")
@@ -104,8 +77,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Performs the oracle request and receive cycle", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
-    const now = await helpers.time.latest();
+    const { rm, oracleRm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -120,7 +92,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Transfers the oracle fee for new policies", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm, oracleMock, linkToken } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -131,7 +103,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Allows only PRICER_ROLE to resolve policies", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -147,7 +119,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Resolves policy with no payout when flight arrives on time", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm, oracleRm, pool } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -166,7 +138,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Resolves policy with full payout when flight arrives too late", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm, oracleRm, pool } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -185,7 +157,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Resolves policy with full payout when flight is cancelled", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm, oracleRm, pool } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -204,7 +176,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Resolves policy with full payout when oracle is missing arrival past tolerance", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm, oracleRm, pool } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -243,7 +215,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Resolves with full payout on manual resolve for cancelled flight", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm, oracleRm, pool } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -266,7 +238,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Resolves with zero payout on manual resolve for on-time flight", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm, oracleRm, pool } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
 
@@ -286,7 +258,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Rejects policies with expected arrival in the past", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({ expectedArrival: (await helpers.time.latest()) - 20 });
 
@@ -296,7 +268,7 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Rejects policies with expected arrival before departure", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     const policy = await makePolicy({});
     policy.expectedArrival = policy.departure - 10;
@@ -305,12 +277,41 @@ describe("FlightDelayRiskModule contract", function () {
   });
 
   it("Reverts when resolving unknown policy", async () => {
-    const { rm, oracleMock, oracleRm } = await deployRiskModuleWithOracleMock();
+    const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
 
     await expect(rm.connect(backend).resolvePolicy(makePolicyId(rm, 123))).to.be.revertedWith("Policy not found!");
   });
 
+  async function deployPoolFixture() {
+    const currency = await initCurrency(
+      { name: "Test USDC", symbol: "USDC", decimals: 6, initial_supply: _A(10000) },
+      [lp, cust],
+      [_A(5000), _A(500)]
+    );
+
+    const linkToken = await deployLinkToken();
+
+    const pool = await deployPool(hre, {
+      currency: currency.address,
+      grantRoles: ["LEVEL1_ROLE", "LEVEL2_ROLE"],
+      treasuryAddress: "0x87c47c9a5a2aa74ae714857d64911d9a091c25b1", // Random address
+    });
+    pool._A = _A;
+
+    const etk = await addEToken(pool, {});
+
+    const premiumsAccount = await deployPremiumsAccount(hre, pool, { srEtkAddr: etk.address });
+
+    const accessManager = await hre.ethers.getContractAt("AccessManager", await pool.access());
+
+    await currency.connect(lp).approve(pool.address, _A(5000));
+    await pool.connect(lp).deposit(etk.address, _A(5000));
+
+    return { currency, linkToken, pool, etk, premiumsAccount, accessManager };
+  }
+
   async function deployRiskModuleWithOracleMock() {
+    const { pool, premiumsAccount, linkToken, currency, accessManager } = await deployPoolFixture();
     // Need to deploy the contract first
     const rm = await addRiskModule(pool, premiumsAccount, FlighDelayRiskModule, {
       maxScrPerPolicy: 1000,
@@ -321,7 +322,9 @@ describe("FlightDelayRiskModule contract", function () {
     });
 
     // Then deploy the oracle mock
-    const ForwardProxy = await ethers.getContractFactory("@ensuro/core/contracts/mocks/ForwardProxy.sol:ForwardProxy");
+    const ForwardProxy = await hre.ethers.getContractFactory(
+      "@ensuro/core/contracts/mocks/ForwardProxy.sol:ForwardProxy"
+    );
     const oracleMock = await ForwardProxy.deploy(rm.address);
     await oracleMock.deployed();
 
@@ -343,13 +346,13 @@ describe("FlightDelayRiskModule contract", function () {
     await currency.connect(cust).approve(backend.address, _W(100));
 
     // Setup the oracle mock to call the risk module
-    oracleRm = await ethers.getContractAt("FlightDelayRiskModule", oracleMock.address);
+    const oracleRm = await hre.ethers.getContractAt("FlightDelayRiskModule", oracleMock.address);
 
-    return { rm, oracleMock, oracleRm };
+    return { rm, oracleMock, oracleRm, pool, premiumsAccount, linkToken, currency, accessManager };
   }
 
   async function deployLinkToken(name = "Mock Link", symbol = "mLINK", initialSupply = _W("1000")) {
-    const LinkTokenMock = await ethers.getContractFactory("LinkTokenMock");
+    const LinkTokenMock = await hre.ethers.getContractFactory("LinkTokenMock");
 
     const linkToken = await LinkTokenMock.deploy(name, symbol, initialSupply);
 
