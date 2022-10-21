@@ -90,8 +90,54 @@ describe("FlightDelayRiskModule contract", function () {
       .withArgs(await rm.oracleParams());
   });
 
+  it("Oracle address validation", async () => {
+    const { pool, premiumsAccount, accessManager, linkToken } = await helpers.loadFixture(deployPoolFixture);
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+    let rm = await expect(
+      addRiskModule(pool, premiumsAccount, FlighDelayRiskModule, {
+        extraArgs: [
+          zeroAddress,
+          [zeroAddress, 30, ORACLE_FEE, "0x2fb0c3a36f924e4ab43040291e14e0b7", "0xb93734c968d741a4930571586f30d0e0"],
+        ],
+      })
+    ).to.be.revertedWith("FlightDelayRiskModule: linkToken cannot be the zero address");
+
+    rm = await addRiskModule(pool, premiumsAccount, FlighDelayRiskModule, {
+      extraArgs: [
+        linkToken.address,
+        [zeroAddress, 30, ORACLE_FEE, "0x2fb0c3a36f924e4ab43040291e14e0b7", "0xb93734c968d741a4930571586f30d0e0"],
+      ],
+    });
+
+    const oracleParams = {};
+
+    [oracleParams.oracle, oracleParams.delayTime, oracleParams.fee, oracleParams.dataJobId, oracleParams.sleepJobId] =
+      await rm.oracleParams();
+    expect(oracleParams.oracle).to.equal(zeroAddress);
+    expect(oracleParams.sleepJobId).to.equal("0xb93734c968d741a4930571586f30d0e0");
+    expect(oracleParams.dataJobId).to.equal("0x2fb0c3a36f924e4ab43040291e14e0b7");
+    expect(oracleParams.delayTime).to.equal(30);
+    expect(oracleParams.fee).to.equal(ORACLE_FEE);
+
+    const newOracleParams = { ...oracleParams };
+    newOracleParams.fee = _W("0.05");
+
+    await accessManager.grantComponentRole(rm.address, await rm.ORACLE_ADMIN_ROLE(), owner.address);
+
+    await expect(rm.connect(owner).setOracleParams(newOracleParams)).to.be.revertedWith(
+      "FlightDelayRiskModule: oracle cannot be the zero address"
+    );
+  });
+
   it("Allows only PRICER_ROLE to add new policies", async () => {
     const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
+
+    const policyWithoutFlightName = await makePolicy({ flight: "" });
+    await expect(rm.connect(backend).newPolicy(...policyWithoutFlightName.toArgs())).to.be.revertedWith(
+      "FlightDelayRiskModule: invalid flight"
+    );
+
     const policy = await makePolicy({});
     await expect(rm.newPolicy(...policy.toArgs())).to.be.revertedWith(
       accessControlMessage(owner.address, rm.address, "PRICER_ROLE")
@@ -398,7 +444,7 @@ describe("FlightDelayRiskModule contract", function () {
   }) {
     const now = await helpers.time.latest();
     const policy = {
-      flight: flight || "AR 1234",
+      flight: flight === undefined ? "AR 1234" : "",
       departure: departure || now + 3600,
       expectedArrival: expectedArrival || now + 3600 * 5,
       tolerance: tolerance || 1800,
