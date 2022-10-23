@@ -66,6 +66,30 @@ describe("FlightDelayRiskModule contract", function () {
     expect(oracleFee).to.equal(_W("0.05"));
   });
 
+  it("Emits an event when setting oracle params", async () => {
+    const { pool, premiumsAccount, accessManager, linkToken } = await helpers.loadFixture(deployPoolFixture);
+    const rm = await addRiskModule(pool, premiumsAccount, FlighDelayRiskModule, {
+      extraArgs: [
+        linkToken.address,
+        [oracle.address, 30, ORACLE_FEE, "0x2fb0c3a36f924e4ab43040291e14e0b7", "0xb93734c968d741a4930571586f30d0e0"],
+      ],
+    });
+    await accessManager.grantComponentRole(rm.address, await rm.ORACLE_ADMIN_ROLE(), owner.address);
+
+    const oracleParams = {};
+    [oracleParams.oracle, oracleParams.delayTime, oracleParams.fee, oracleParams.dataJobId, oracleParams.sleepJobId] =
+      await rm.oracleParams();
+
+    const newOracleParams = { ...oracleParams };
+    newOracleParams.fee = _W("0.05");
+
+    const tx = await rm.connect(owner).setOracleParams(newOracleParams);
+
+    await expect(tx)
+      .to.emit(rm, "NewOracleParams")
+      .withArgs(await rm.oracleParams());
+  });
+
   it("Allows only PRICER_ROLE to add new policies", async () => {
     const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
     const policy = await makePolicy({});
