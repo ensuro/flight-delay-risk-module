@@ -43,6 +43,8 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
   mapping(bytes32 => uint256) internal _pendingQueries;
   mapping(uint256 => PolicyData) internal _policies;
 
+  event NewOracleParams(OracleParams newParams);
+
   /// @custom:oz-upgrades-unsafe-allow constructor
   // solhint-disable-next-line no-empty-blocks
   constructor(IPolicyPool policyPool_, IPremiumsAccount premiumsAccount_)
@@ -94,11 +96,23 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
     _oracleParams = oracleParams_;
   }
 
+  /**
+   * @dev Sets new oracle params for the contract
+   *
+   * Requirements:
+   * - onlyComponentRole(ORACLE_ADMIN_ROLE)
+   *
+   * Events:
+   * - Emits NewOracleParams with the full current oracle params
+   *
+   * @param newParams the new parameters struct
+   */
   function setOracleParams(OracleParams memory newParams)
     external
     onlyComponentRole(ORACLE_ADMIN_ROLE)
   {
     _oracleParams = newParams;
+    emit NewOracleParams(_oracleParams);
   }
 
   function oracleParams() external view returns (OracleParams memory) {
