@@ -311,7 +311,7 @@ describe("FlightDelayRiskModule contract", function () {
 
     const now = await helpers.time.latest();
     const policy = await makePolicy({});
-    policy.departure = now;
+    policy.departure = now - 3;
 
     await expect(rm.connect(backend).newPolicy(...policy.toArgs())).to.be.revertedWith(
       "FlightDelayRiskModule: departure can't be in the past"
@@ -411,7 +411,7 @@ describe("FlightDelayRiskModule contract", function () {
     const now = await helpers.time.latest();
     const policy = {
       flight: flight || "AR 1234",
-      departure: departure || now + 3600,
+      departure: departure || now + 3601 * 4,
       expectedArrival: expectedArrival || now + 3600 * 5,
       tolerance: tolerance || 1800,
       payout: payout || _A(1000),

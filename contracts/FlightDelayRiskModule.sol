@@ -21,6 +21,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
   bytes32 public constant ORACLE_ADMIN_ROLE = keccak256("ORACLE_ADMIN_ROLE");
   // Multiplier to calculate expiration = expectedArrival + tolerance + delayTime * DELAY_EXPIRATION_TIMES
   uint40 public constant DELAY_EXPIRATION_TIMES = 5;
+  uint40 public constant DEPARTURE_TOLERANCE_HOURS = 4 * 3600; // 4 hours
 
   struct PolicyData {
     Policy.PolicyData ensuroPolicy;
@@ -143,7 +144,10 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
   ) external onlyComponentRole(PRICER_ROLE) returns (uint256) {
     require(expectedArrival > block.timestamp, "expectedArrival can't be in the past");
     require(departure != 0 && expectedArrival > departure, "expectedArrival <= departure!");
-    require(block.timestamp < departure, "FlightDelayRiskModule: departure can't be in the past");
+    require(
+      block.timestamp < departure - DEPARTURE_TOLERANCE_HOURS,
+      "FlightDelayRiskModule: departure can't be in the past"
+    );
     uint40 expiration = expectedArrival +
       tolerance +
       uint40(_oracleParams.delayTime) *
