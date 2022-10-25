@@ -143,6 +143,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
   ) external onlyComponentRole(PRICER_ROLE) returns (uint256) {
     require(expectedArrival > block.timestamp, "expectedArrival can't be in the past");
     require(departure != 0 && expectedArrival > departure, "expectedArrival <= departure!");
+    require(block.timestamp < departure, "FlightDelayRiskModule: departure can't be in the past");
     uint40 expiration = expectedArrival +
       tolerance +
       uint40(_oracleParams.delayTime) *

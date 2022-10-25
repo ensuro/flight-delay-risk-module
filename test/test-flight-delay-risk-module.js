@@ -306,6 +306,18 @@ describe("FlightDelayRiskModule contract", function () {
     await expect(rm.connect(backend).resolvePolicy(makePolicyId(rm, 123))).to.be.revertedWith("Policy not found!");
   });
 
+  it("Cant create policy in the past", async () => {
+    const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
+
+    const now = await helpers.time.latest();
+    const policy = await makePolicy({});
+    policy.departure = now;
+
+    await expect(rm.connect(backend).newPolicy(...policy.toArgs())).to.be.revertedWith(
+      "FlightDelayRiskModule: departure can't be in the past"
+    );
+  });
+
   async function deployPoolFixture() {
     const currency = await initCurrency(
       { name: "Test USDC", symbol: "USDC", decimals: 6, initial_supply: _A(10000) },
