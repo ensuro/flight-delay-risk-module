@@ -444,7 +444,7 @@ describe("FlightDelayRiskModule contract", function () {
   }) {
     const now = await helpers.time.latest();
     const policy = {
-      flight: flight === undefined ? "AR 1234" : "",
+      flight: flight === undefined ? "AR 1234" : flight,
       departure: departure || now + 3600,
       expectedArrival: expectedArrival || now + 3600 * 5,
       tolerance: tolerance || 1800,
