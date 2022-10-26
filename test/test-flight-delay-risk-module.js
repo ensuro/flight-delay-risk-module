@@ -314,7 +314,7 @@ describe("FlightDelayRiskModule contract", function () {
     policy.departure = now - 3;
 
     await expect(rm.connect(backend).newPolicy(...policy.toArgs())).to.be.revertedWith(
-      "FlightDelayRiskModule: departure can't be in the past"
+      "FlightDelayRiskModule: rejected, flight departure is too soon"
     );
   });
 
