@@ -21,6 +21,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
   bytes32 public constant ORACLE_ADMIN_ROLE = keccak256("ORACLE_ADMIN_ROLE");
   // Multiplier to calculate expiration = expectedArrival + tolerance + delayTime * DELAY_EXPIRATION_TIMES
   uint40 public constant DELAY_EXPIRATION_TIMES = 5;
+  uint40 public constant DEPARTURE_TOLERANCE = 4 * 3600; // 4 hours
 
   struct PolicyData {
     Policy.PolicyData ensuroPolicy;
@@ -152,6 +153,10 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
     require(bytes(flight).length > 0, "FlightDelayRiskModule: invalid flight");
     require(expectedArrival > block.timestamp, "expectedArrival can't be in the past");
     require(departure != 0 && expectedArrival > departure, "expectedArrival <= departure!");
+    require(
+      block.timestamp < departure - DEPARTURE_TOLERANCE,
+      "FlightDelayRiskModule: rejected, flight departure is too soon"
+    );
     uint40 expiration = expectedArrival +
       tolerance +
       uint40(_oracleParams.delayTime) *

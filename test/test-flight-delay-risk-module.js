@@ -352,6 +352,18 @@ describe("FlightDelayRiskModule contract", function () {
     await expect(rm.connect(backend).resolvePolicy(makePolicyId(rm, 123))).to.be.revertedWith("Policy not found!");
   });
 
+  it("Cant create policy in the past", async () => {
+    const { rm } = await helpers.loadFixture(deployRiskModuleWithOracleMock);
+
+    const now = await helpers.time.latest();
+    const policy = await makePolicy({});
+    policy.departure = now - 3;
+
+    await expect(rm.connect(backend).newPolicy(...policy.toArgs())).to.be.revertedWith(
+      "FlightDelayRiskModule: rejected, flight departure is too soon"
+    );
+  });
+
   async function deployPoolFixture() {
     const currency = await initCurrency(
       { name: "Test USDC", symbol: "USDC", decimals: 6, initial_supply: _A(10000) },
@@ -445,7 +457,7 @@ describe("FlightDelayRiskModule contract", function () {
     const now = await helpers.time.latest();
     const policy = {
       flight: flight === undefined ? "AR 1234" : flight,
-      departure: departure || now + 3600,
+      departure: departure || now + 3601 * 4,
       expectedArrival: expectedArrival || now + 3600 * 5,
       tolerance: tolerance || 1800,
       payout: payout || _A(1000),
