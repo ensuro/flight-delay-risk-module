@@ -93,6 +93,10 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
     address linkToken_,
     OracleParams memory oracleParams_
   ) internal onlyInitializing {
+    require(
+      linkToken_ != address(0),
+      "FlightDelayRiskModule: linkToken cannot be the zero address"
+    );
     setChainlinkToken(linkToken_);
     _oracleParams = oracleParams_;
   }
@@ -112,6 +116,10 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
     external
     onlyComponentRole(ORACLE_ADMIN_ROLE)
   {
+    require(
+      newParams.oracle != address(0),
+      "FlightDelayRiskModule: oracle cannot be the zero address"
+    );
     _oracleParams = newParams;
     emit NewOracleParams(_oracleParams);
   }
@@ -142,6 +150,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
     address onBehalfOf,
     uint96 internalId
   ) external onlyComponentRole(PRICER_ROLE) returns (uint256) {
+    require(bytes(flight).length > 0, "FlightDelayRiskModule: invalid flight");
     require(expectedArrival > block.timestamp, "expectedArrival can't be in the past");
     require(departure != 0 && expectedArrival > departure, "expectedArrival <= departure!");
     require(
