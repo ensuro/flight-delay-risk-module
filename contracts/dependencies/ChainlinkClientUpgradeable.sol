@@ -153,7 +153,7 @@ contract ChainlinkClientUpgradeable is Initializable {
       bytes32 requestId
     )
   {
-    return rawRequest(oracleAddress, req, payment, OPERATOR_ARGS_VERSION, oracle.requestOracleData.selector);
+    return rawRequest(oracleAddress, req, payment, OPERATOR_ARGS_VERSION, oracle.oracleRequest.selector);
   }
 
   /**
