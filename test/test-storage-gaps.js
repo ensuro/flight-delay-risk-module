@@ -1,6 +1,5 @@
 require("mocha");
 const { expect } = require("chai");
-const hre = require("hardhat");
 
 const { getStorageLayout } = require("@ensuro/core/js/test-utils");
 
