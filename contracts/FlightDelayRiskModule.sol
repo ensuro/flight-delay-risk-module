@@ -19,9 +19,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
 
   bytes32 public constant PRICER_ROLE = keccak256("PRICER_ROLE");
   bytes32 public constant ORACLE_ADMIN_ROLE = keccak256("ORACLE_ADMIN_ROLE");
-  // Multiplier to calculate expiration = expectedArrival + tolerance + delayTime * DELAY_EXPIRATION_TIMES
-  uint40 public constant DELAY_EXPIRATION_TIMES = 5;
-  uint40 public constant DEPARTURE_TOLERANCE = 4 * 3600; // 4 hours
+  uint40 internal constant DEPARTURE_TOLERANCE = 4 * 3600; // 4 hours
 
   struct PolicyData {
     Policy.PolicyData ensuroPolicy;
@@ -47,7 +45,6 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
   event NewOracleParams(OracleParams newParams);
 
   /// @custom:oz-upgrades-unsafe-allow constructor
-  // solhint-disable-next-line no-empty-blocks
   constructor(IPolicyPool policyPool_, IPremiumsAccount premiumsAccount_)
     RiskModule(policyPool_, premiumsAccount_)
   {} // solhint-disable-line no-empty-blocks
@@ -157,10 +154,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
       block.timestamp < departure - DEPARTURE_TOLERANCE,
       "FlightDelayRiskModule: rejected, flight departure is too soon"
     );
-    uint40 expiration = expectedArrival +
-      tolerance +
-      uint40(_oracleParams.delayTime) *
-      DELAY_EXPIRATION_TIMES;
+    uint40 expiration = expectedArrival + tolerance + uint40(_oracleParams.delayTime);
     Policy.PolicyData memory ensuroPolicy = _newPolicy(
       payout,
       premium,
@@ -177,7 +171,7 @@ contract FlightDelayRiskModule is RiskModule, ChainlinkClientUpgradeable {
     policy.expectedArrival = expectedArrival;
     policy.tolerance = tolerance;
 
-    uint256 until = expectedArrival + tolerance + uint256(_oracleParams.delayTime);
+    uint256 until = expectedArrival + tolerance;
     _chainlinkRequest(ensuroPolicy.id, policy, until);
     return ensuroPolicy.id;
   }

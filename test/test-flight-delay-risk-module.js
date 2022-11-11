@@ -264,7 +264,7 @@ describe("FlightDelayRiskModule contract", function () {
     await expect(fulfillTx).to.not.emit(pool, "PolicyResolved");
 
     // Fast forward past tolerance (but before expiration)
-    await helpers.time.increaseTo(policy.expectedArrival + policy.tolerance + 100);
+    await helpers.time.increaseTo(policy.expectedArrival + policy.tolerance + 25);
 
     // Resolving the policy should repeat oracle query
     const resolveTx = await rm.connect(backend).resolvePolicy(makePolicyId(rm, policy.internalId));
