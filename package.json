@@ -1,6 +1,6 @@
 {
   "name": "flightdelayriskmodule",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "description": "Risk Module for the Ensuro Protocol that resolves policy based in actual arrival date of flight",
   "scripts": {
     "prettier": "prettier --write 'contracts/**/*.sol' --write 'test/**/*.js'",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@chainlink/contracts": "^0.5.1",
-    "@ensuro/core": "^2.0.0-beta11",
+    "@ensuro/core": "^2.0.0",
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/contracts-upgradeable": "^4.7.3"
   },
